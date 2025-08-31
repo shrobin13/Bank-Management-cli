@@ -6,7 +6,7 @@ public class Accountant {
     private String password;
 
     public Accountant(String userName, String email, String password){
-        super();
+//        super();
         this.userName = userName;
         this.email = email;
         this.password = password;

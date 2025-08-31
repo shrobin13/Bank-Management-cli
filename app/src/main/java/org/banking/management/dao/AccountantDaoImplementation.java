@@ -30,10 +30,12 @@ public class AccountantDaoImplementation implements AccountantDao{
                     if(PasswordUtils.checkPassword(password, dbPassword)){
                         accountant = new Accountant(dbUserName, dbEmail, dbPassword);
                     }else{
-                        throw new AccountantException("Invalid Username or Password");
+//                        throw new AccountantException("Invalid Username or Password");
+                        System.out.println("Invalid Username or password ");
                     }
                 }else{
-                    throw new AccountantException("Invalid Username or Password");
+//                    throw new AccountantException("Invalid Username or Password");
+                    System.out.println("Invalid Username or password ");
                 }
             }
         } catch (SQLException e){
