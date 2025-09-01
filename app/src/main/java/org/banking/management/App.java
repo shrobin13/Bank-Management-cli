@@ -5,104 +5,170 @@ package org.banking.management;
 
 import org.banking.management.dao.AccountantDao;
 import org.banking.management.dao.AccountantDaoImplementation;
-import org.banking.management.dao.CustomerDaoImplementation;
 import org.banking.management.entity.Accountant;
+import org.banking.management.entity.Address;
 import org.banking.management.exception.AccountantException;
 import org.banking.management.exception.CustomerException;
+import org.banking.management.utils.AccountUtils;
 import org.banking.management.utils.PasswordUtils;
 
 import java.util.Scanner;
+import java.util.function.DoubleToIntFunction;
 
 public class App {
 
-  public static void main(String[] args) {
-    Scanner sc = new Scanner(System.in);
-    for (;;) {
-          System.out.println("------------WELCOME TO ONLINE BANKING SYSTEM------------");
-          System.out.println("--------------------------------------------------------");
-          System.out.println("1. ADMIN LOGIN PORTAL \n2. CUSTOMER");
-          System.out.println("Choose your option: ");
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        for (;;) {
+            System.out.println("------------WELCOME TO ONLINE BANKING SYSTEM------------");
+            System.out.println("--------------------------------------------------------");
+            System.out.println("1. ADMIN LOGIN PORTAL \n2. CUSTOMER");
+            System.out.println("Choose your option: ");
 
-          int choice = sc.nextInt();
+            int choice = sc.nextInt();
 
-          switch (choice) {
-              case 1 -> {
-                  System.out.println("ADMIN LOGIN CREDENTIALS ---------------- ACCOUNTANT");
-                  System.out.print("ENTER USERNAME: ");
-                  String username = sc.next();
-                  System.out.print("ENTER PASSWORD: ");
-                  String password = sc.next();
+            switch (choice) {
+                case 1 -> {
+                    System.out.println("ADMIN LOGIN CREDENTIALS ---------------- ACCOUNTANT");
+                    System.out.print("ENTER USERNAME: ");
+                    String username = sc.next();
+                    System.out.print("ENTER PASSWORD: ");
+                    String password = sc.next();
 
-                  AccountantDao accountantDao = new AccountantDaoImplementation();
+                    AccountantDao accountantDao = new AccountantDaoImplementation();
 
-                  try {
-                      Accountant accountant = accountantDao.loginAccountant(username, password);
+                    try {
+                        Accountant accountant = accountantDao.loginAccountant(username, password);
 
-                      if (accountant == null) {
-                          System.out.println("❌ WRONG CREDENTIALS");
-                          continue;
-                      }
+                        if (accountant == null) {
+                            System.out.println("❌ WRONG CREDENTIALS");
+                            continue;
+                        }
 
-                      System.out.println("✅ LOGIN SUCCESSFUL!!!!");
-                      System.out.println("WELCOME " + accountant.getUserName().toUpperCase() + " AS ADMIN");
+                        System.out.println("✅ LOGIN SUCCESSFUL!!!!");
+                        System.out.println("WELCOME " + accountant.getUserName().toUpperCase() + " AS ADMIN");
 
-                      // Admin menu loop
-                      for (;;) {
-                          System.out.println("---------------------------");
-                          System.out.println("1. Add New Customer Account");
-                          System.out.println("0. Logout");
-                          int accountantChoice = sc.nextInt();
+                        // Admin menu loop
+                        for (;;) {
+                            System.out.println("---------------------------");
+                            System.out.println("1. Add New Customer Account");
+                            System.out.println("2. Show all User list");
+                            System.out.println("3. Update Customer Address");
+                            System.out.println("4. Show Customer Profile");
+                            System.out.println("5. Delete a Customer");
+                            System.out.println("0. Logout");
+                            int accountantChoice = sc.nextInt();
 
-                          if (accountantChoice == 1) {
-                              try {
-                                  System.out.println("-------- New Account For Customer ---------");
-                                  System.out.print("Enter Customer Name: ");
-                                  String customerName = sc.next();
-                                  System.out.print("Enter Customer Email: ");
-                                  String customerEmail = sc.next();
-                                  System.out.print("Enter Customer Password: ");
-                                  String customerPassword = sc.next();
-                                  System.out.print("Enter Customer Contact No: ");
-                                  String customerContact = sc.next();
-                                  System.out.print("Enter Customer Address: ");
-                                  String customerAddress = sc.next();
-                                  System.out.print("Enter the initial deposit: ");
-                                  int initialDeposit = sc.nextInt();
+                            if (accountantChoice == 1) {
+                                try {
+                                    System.out.println("-------- New Account For Customer ---------");
+                                    System.out.print("Enter Customer Name: ");
+                                    String customerName = sc.next();
+                                    System.out.print("Enter Customer Email: ");
+                                    String customerEmail = sc.next();
+                                    System.out.print("Enter Customer Password: ");
+                                    String customerPassword = sc.next();
+                                    System.out.print("Country: ");
+                                    String country = sc.next();
+                                    System.out.print("City: ");
+                                    String city = sc.next();
+                                    System.out.print("Post Code: ");
+                                    int postCode = sc.nextInt();
+                                    System.out.print("Contact Number: ");
+                                    String contactNo = sc.next();
+                                    System.out.print("Enter the initial deposit: ");
+                                    int initialDeposit = sc.nextInt();
 
-                                  int customerId = new CustomerDaoImplementation().addCustomer(
-                                          customerName,
-                                          customerEmail,
-                                          PasswordUtils.hashPassword(customerPassword),
-                                          customerContact,
-                                          customerAddress,
-                                          initialDeposit
-                                  );
 
-                                  System.out.println("✅ Customer added successfully with ID: " + customerId);
-                              } catch (CustomerException e) {
-                                  System.out.println("❌ " + e.getMessage());
-                              }
-                          } else if (accountantChoice == 0) {
-                              System.out.println("Logging out...");
-                              break; // exit admin menu
-                          }
-                      }
+                                    int customerId = accountantDao.addCustomer(
+                                            customerName,
+                                            customerEmail,
+                                            PasswordUtils.hashPassword(customerPassword),
+                                            initialDeposit,
+                                            country,
+                                            city,
+                                            postCode,
+                                            contactNo
+                                    );
 
-                  } catch (AccountantException e) {
-                      System.out.println("❌ Error: " + e.getMessage());
-                  } catch (Exception e) {
-                      System.out.println("⚠️ Unexpected error: " + e.getMessage());
-                  }
-              }
+                                    System.out.println("✅ Customer added successfully with ID: " + customerId);
+                                } catch (CustomerException e) {
+                                    System.out.println("❌ " + e.getMessage());
+                                }
+                            } else if (accountantChoice == 0) {
+                                System.out.println("Logging out...");
+                                break; // exit admin menu
+                            } else if(accountantChoice == 2){
+                                System.out.println("------------All Customer-----------");
+                                try {
+                                    AccountantDao.showAllCustomers();
+                                } catch (CustomerException ce) {
+                                    System.out.println(ce.getMessage());
+                                }
+                                System.out.println("------------------------------------");
+                            } else if (accountantChoice == 3) {
+                                System.out.println("--------Update Address------");
+                                System.out.println("Enter Customer Address Information->");
+                                System.out.print("Enter the customer id: ");
+                                int customerId = sc.nextInt();
+                                System.out.print("Country: ");
+                                String country = sc.next();
+                                System.out.print("City: ");
+                                String city = sc.next();
+                                System.out.print("Post Code: ");
+                                int post_code = sc.nextInt();
+                                System.out.print("Contact No: ");
+                                String contact_no = sc.next();
+                                Address customerAddress = new Address(
+                                        country,
+                                        city,
+                                        post_code,
+                                        contact_no
+                                );
 
-              case 2 -> {
-                  System.out.println("Customer portal not implemented yet...");
-              }
+                                try{
+                                    System.out.println(accountantDao.updateCustomerAddress(customerId, customerAddress));
+                                }catch (CustomerException ce){
+                                    System.out.println(ce.getMessage());
+                                }
 
-              default -> {
-                  System.out.println("❌ Invalid option, try again.");
-              }
-          }
-      }
-  }
+                            } else if(accountantChoice == 4){
+                                System.out.println("-------View User Profile------------");
+                                System.out.print("Enter customer Id: ");
+                                int customerId = sc.nextInt();
+                                try{
+                                    AccountUtils.showIndividualAccountInfo(customerId);
+                                } catch (CustomerException e) {
+                                    System.out.println("NO user Found with the given Id." + e.getMessage());
+                                }
+                            }
+                            else if(accountantChoice == 5) {
+                                System.out.println("--------Delete Customer----------");
+                                System.out.print("Enter customer Id: ");
+                                int customerId = sc.nextInt();
+                                try {
+                                    accountantDao.deleteCustomerAccount(customerId);
+                                } catch (CustomerException ce) {
+                                    System.out.println(ce.getMessage());
+                                }
+                            }
+                        }
+
+                    } catch (AccountantException e) {
+                        System.out.println("❌ Error: " + e.getMessage());
+                    } catch (Exception e) {
+                        System.out.println("⚠️ Unexpected error: " + e.getMessage());
+                    }
+                }
+
+                case 2 -> {
+                    System.out.println("Customer portal not implemented yet...");
+                }
+
+                default -> {
+                    System.out.println("❌ Invalid option, try again.");
+                }
+            }
+        }
+    }
 }
