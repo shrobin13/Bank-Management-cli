@@ -5,15 +5,17 @@ package org.banking.management;
 
 import org.banking.management.dao.AccountantDao;
 import org.banking.management.dao.AccountantDaoImplementation;
+import org.banking.management.dao.CustomerDao;
+import org.banking.management.dao.CustomerDaoImplementation;
 import org.banking.management.entity.Accountant;
 import org.banking.management.entity.Address;
+import org.banking.management.entity.Customer;
 import org.banking.management.exception.AccountantException;
 import org.banking.management.exception.CustomerException;
 import org.banking.management.utils.AccountUtils;
 import org.banking.management.utils.PasswordUtils;
 
 import java.util.Scanner;
-import java.util.function.DoubleToIntFunction;
 
 public class App {
 
@@ -22,7 +24,8 @@ public class App {
         for (;;) {
             System.out.println("------------WELCOME TO ONLINE BANKING SYSTEM------------");
             System.out.println("--------------------------------------------------------");
-            System.out.println("1. ADMIN LOGIN PORTAL \n2. CUSTOMER");
+            System.out.println("1. ADMIN LOGIN PORTAL \n2. CUSTOMER LOGIN PORTAL");
+            System.out.println("0. EXIT ONLINE BANKING!");
             System.out.println("Choose your option: ");
 
             int choice = sc.nextInt();
@@ -92,8 +95,8 @@ public class App {
                                     );
 
                                     System.out.println("✅ Customer added successfully with ID: " + customerId);
-                                } catch (CustomerException e) {
-                                    System.out.println("❌ " + e.getMessage());
+                                } catch (AccountantException acEx) {
+                                    System.out.println("❌ " + acEx.getMessage());
                                 }
                             } else if (accountantChoice == 0) {
                                 System.out.println("Logging out...");
@@ -102,8 +105,8 @@ public class App {
                                 System.out.println("------------All Customer-----------");
                                 try {
                                     AccountantDao.showAllCustomers();
-                                } catch (CustomerException ce) {
-                                    System.out.println(ce.getMessage());
+                                } catch (AccountantException acEx) {
+                                    System.out.println(acEx.getMessage());
                                 }
                                 System.out.println("------------------------------------");
                             } else if (accountantChoice == 3) {
@@ -128,8 +131,8 @@ public class App {
 
                                 try{
                                     System.out.println(accountantDao.updateCustomerAddress(customerId, customerAddress));
-                                }catch (CustomerException ce){
-                                    System.out.println(ce.getMessage());
+                                }catch (AccountantException acEx){
+                                    System.out.println(acEx.getMessage());
                                 }
 
                             } else if(accountantChoice == 4){
@@ -148,27 +151,120 @@ public class App {
                                 int customerId = sc.nextInt();
                                 try {
                                     accountantDao.deleteCustomerAccount(customerId);
-                                } catch (CustomerException ce) {
-                                    System.out.println(ce.getMessage());
+                                } catch (AccountantException acEx) {
+                                    System.out.println(acEx.getMessage());
                                 }
                             }
                         }
 
-                    } catch (AccountantException e) {
-                        System.out.println("❌ Error: " + e.getMessage());
+                    } catch (AccountantException acEx) {
+                        System.out.println("❌ Error: " + acEx.getMessage());
                     } catch (Exception e) {
                         System.out.println("⚠️ Unexpected error: " + e.getMessage());
                     }
                 }
 
                 case 2 -> {
-                    System.out.println("Customer portal not implemented yet...");
+                    System.out.println("----------Customer Login-------------");
+                    System.out.print("Enter your email: ");
+                    String email = sc.next();
+                    System.out.print("Enter your password: ");
+                    String password = sc.next();
+
+                    CustomerDao customerDao = new CustomerDaoImplementation();
+                    try(Customer customer = customerDao.customerLogin(email, password)){
+                        if(customer != null){
+                            for (;;){
+                                System.out.println("-----Welcome " + customer.getName().toUpperCase() + " in your Dashboard--------");
+                                System.out.println("1. View Profile.");
+                                System.out.println("2. Show Balance");
+                                System.out.println("3. Deposit Balance");
+                                System.out.println("4. Withdraw Balance");
+                                System.out.println("5. Transfer Balance");
+                                System.out.println("0. Logout!");
+                                System.out.println("Enter your choice: ");
+                                int accountChoice = sc.nextInt();
+
+                                if(accountChoice == 1){
+                                    try{
+                                        AccountUtils.showIndividualAccountInfo(customer.getId());
+                                    } catch (CustomerException e) {
+                                        System.out.println(e.getMessage());
+                                    }
+                                }else if(accountChoice == 2){
+                                    try{
+                                        System.out.println("Your current balance is: " +
+                                                customerDao.showBalance(customer.getId()));
+                                    } catch (CustomerException e) {
+                                        System.out.println(e.getMessage());
+                                    }
+                                }else if(accountChoice == 3) {
+                                    try {
+                                        System.out.println("----Deposit Section----");
+                                        System.out.println("Enter deposit amount: ");
+                                        int amount = sc.nextInt();
+                                        if(customerDao.deposit(customer.getId(), amount)){
+                                            System.out.println("Deposit Successful!");
+                                            System.out.println("Current balance: " +
+                                              customerDao.showBalance(customer.getId()) + " taka"
+                                            );
+                                        }
+                                    } catch (CustomerException e) {
+                                        System.out.println(e.getMessage());
+                                    }
+                                } else if(accountChoice == 4) {
+                                    System.out.println("--------Withdrawal Section--------");
+                                    System.out.println("Enter the Amount to withdraw.");
+                                    int withdrawAmount = sc.nextInt();
+
+                                    try{
+                                        int currentBalance = customerDao.showBalance(customer.getId());
+                                        if(withdrawAmount > currentBalance){
+                                            throw new CustomerException("Insufficient Balance!!!");
+                                        }
+                                        if(customerDao.withdrawBalance(customer.getId(), withdrawAmount)){
+                                            System.out.println(withdrawAmount + " taka has been withdrawn!");
+                                        }
+                                        System.out.println("Your current balance is: " +
+                                                customerDao.showBalance(customer.getId()) + " taka"
+                                        );
+                                    } catch (CustomerException ce) {
+                                        System.out.println(ce.getMessage());
+                                    }
+                                }else if(accountChoice == 5){
+                                    System.out.println("---------Transfer Balance Section---------");
+                                    System.out.print("Enter the Recipient Id: ");
+                                    int recipientId = sc.nextInt();
+                                    System.out.print("Enter the amount you want to transfer: ");
+                                    int transferAmount = sc.nextInt();
+                                    try{
+                                        customerDao.transferBalance(customer.getId(), recipientId, transferAmount);
+                                    } catch (CustomerException ce) {
+                                        System.out.println(ce.getMessage());
+                                    }
+
+                                }else if (accountChoice == 0) {
+                                    System.out.println("Logging Out.....");
+                                    break;
+                                }
+                            }
+                        }
+                    }catch(CustomerException ce){
+                        System.out.println();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
                 }
 
+                case 0 -> {
+                    System.out.println("Exiting....");
+                }
                 default -> {
                     System.out.println("❌ Invalid option, try again.");
                 }
             }
+
+            break;
         }
     }
 }

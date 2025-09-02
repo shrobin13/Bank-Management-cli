@@ -14,13 +14,13 @@ import java.sql.SQLException;
 
 public interface AccountantDao {
     public Accountant loginAccountant(String username, String password) throws AccountantException;
-    public int addCustomer(String name, String email, String password, int initialDeposit, String country, String city, int postCode, String contactNo) throws CustomerException;
-    public String updateCustomerAddress(int customerAccountNumber, Address Address )throws CustomerException;
-    public void deleteCustomerAccount(int customerId) throws CustomerException;
+    public int addCustomer(String name, String email, String password, int initialDeposit, String country, String city, int postCode, String contactNo) throws AccountantException;
+    public String updateCustomerAddress(int customerAccountNumber, Address Address )throws AccountantException;
+    public void deleteCustomerAccount(int customerId) throws AccountantException;
 
 
 
-    public static void showAllCustomers() throws CustomerException {
+    public static void showAllCustomers() throws AccountantException {
         final String query = "SELECT * FROM customer";
 
         try (Connection connection = DatabaseConnection.connectionProvider();
@@ -28,13 +28,13 @@ public interface AccountantDao {
              ResultSet resultSet = statement.executeQuery()) {
 
             if (!resultSet.isBeforeFirst()) {
-                throw new CustomerException("No customers found!");
+                throw new AccountantException("No customers found!");
             }
 
             AccountUtils.printResultSet(resultSet);
 
         } catch (SQLException sqlEx) {
-            throw new CustomerException("Database error occurred: " + sqlEx.getMessage(), sqlEx);
+            throw new AccountantException("Database error occurred: " + sqlEx.getMessage(), sqlEx);
         }
     }
 

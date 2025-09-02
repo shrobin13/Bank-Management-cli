@@ -1,6 +1,10 @@
 package org.banking.management.entity;
 
-public class Customer {
+import org.banking.management.exception.CustomerException;
+
+public class Customer implements AutoCloseable {
+
+    private int id;
     private int accountNumber;
     private int balance;
     private String name;
@@ -9,6 +13,12 @@ public class Customer {
     private String contactNo;
     private String address;
 
+    public Customer(int id, String name, String email, String password){
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+    }
 
     public Customer(int accountNumber, int balance, String name, String email, String password, String contactNo, String address) {
         this.accountNumber = accountNumber;
@@ -32,6 +42,14 @@ public class Customer {
 
     public String getPassword() {
         return password;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public void setBalance(int balance) {
@@ -82,5 +100,10 @@ public class Customer {
 
     public int getBalance() {
         return balance;
+    }
+
+    @Override
+    public void close() throws Exception {
+        throw new CustomerException("Customer logging out...");
     }
 }

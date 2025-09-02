@@ -43,7 +43,7 @@ public class AccountantDaoImplementation implements AccountantDao{
     }
 
     @Override
-    public int addCustomer(String name, String email, String password, int initialDeposit, String country, String city, int postCode, String contactNo) throws CustomerException {
+    public int addCustomer(String name, String email, String password, int initialDeposit, String country, String city, int postCode, String contactNo) throws AccountantException {
 
         int id = -1;
 
@@ -84,13 +84,13 @@ public class AccountantDaoImplementation implements AccountantDao{
                 System.out.println("Customer added successfully with ID: " + id + " with the initial deposit of: " + initialDeposit);
             }
         } catch (SQLException e) {
-            throw new CustomerException("Something went wrong! " + e.getMessage());
+            throw new AccountantException("Something went wrong! " + e.getMessage());
         }
         return id;
     }
 
     @Override
-    public String updateCustomerAddress(int customerAccountNumber, Address address) throws CustomerException {
+    public String updateCustomerAddress(int customerAccountNumber, Address address) throws AccountantException {
         String message = "I don't know, something went wrong!";
         String addressSql = "UPDATE address SET country = ?, city = ?, post_code = ?, contact_no = ? WHERE user_id = ?";
 
@@ -105,20 +105,20 @@ public class AccountantDaoImplementation implements AccountantDao{
             int rowsAffected = updatedAddressStatement.executeUpdate();
 
             if(rowsAffected == 0){
-                throw new CustomerException("No user Found with id: " + customerAccountNumber);
+                throw new AccountantException("No user Found with id: " + customerAccountNumber);
             }
 
             message = "Customer address updated successfully with the id of " + customerAccountNumber;
 
         } catch (SQLException se) {
-            throw new CustomerException("Something went wrong! " + se.getMessage());
+            throw new AccountantException("Something went wrong! " + se.getMessage());
         }
 
         return message;
     }
 
     @Override
-    public void deleteCustomerAccount(int customerId) throws CustomerException {
+    public void deleteCustomerAccount(int customerId) throws AccountantException {
         String deleteCustomerSql = "DELETE FROM customer WHERE id = ?";
 
         try(Connection conn = DatabaseConnection.connectionProvider();
@@ -126,10 +126,10 @@ public class AccountantDaoImplementation implements AccountantDao{
         ){
             deleteCustomerStmt.setInt(1, customerId);
             int affectedRows = deleteCustomerStmt.executeUpdate();
-            if(affectedRows == 0) throw new CustomerException("Customer no found with id: " + customerId);
+            if(affectedRows == 0) throw new AccountantException("Customer no found with id: " + customerId);
             System.out.println("Customer Deleted Successfully");
         }catch (SQLException se){
-            throw new CustomerException("Something went wrong! " + se.getMessage());
+            throw new AccountantException("Something went wrong! " + se.getMessage());
         }
     }
 
